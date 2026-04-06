@@ -1,0 +1,214 @@
+# ============================================================
+# NEXUS-ARB v2.0 — Production Configuration
+# ============================================================
+
+network:
+  chain_id: 42161          # Arbitrum One
+  name: arbitrum
+  block_time_ms: 250       # ~250ms average block time
+  finality_blocks: 1       # Arbitrum L2: 1-block finality
+
+# ─── On-Chain Addresses (Arbitrum Mainnet) ──────────────────
+addresses:
+  # Aave V3
+  aave_pool: "0x794a61358D6845594F94dc1DB02A252b5b4814aD"
+  aave_pool_addresses_provider: "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb"
+
+  # Uniswap V3
+  uniswap_router: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+  uniswap_factory: "0x1F98431c8aD98523631AE4a59f267346ea31F984"
+  uniswap_quoter_v2: "0x61fFE014bA17989E743c5F6cB21bF9697530B21e"
+
+  # Curve Finance
+  curve_router: "0x4c2Af2Df2a7E567B5155879720619EA06C5BB15D"
+  curve_registry: "0x0000000022D53366457F9d5E68Ec105046FC4383"
+
+  # Balancer V2
+  balancer_vault: "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
+
+  # Camelot V3 (Arbitrum-native)
+  camelot_router: "0x1F721E2E82F6676FCE4eA07A5958cF098D339e18"
+  camelot_factory: "0x6EcCab422D763aC031210895C81787E87B43A652"
+
+  # Multicall3
+  multicall3: "0xcA11bde05977b3631167028862bE2a173976CA11"
+
+  # Chainlink Price Feeds
+  chainlink:
+    eth_usd: "0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612"
+    btc_usd: "0x6ce185860a4963106506C203335A2910413708e9"
+    arb_usd: "0xb2A824043730FE05F3DA2efaFa1CBbe83fa548D6"
+    usdc_usd: "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3"
+    usdt_usd: "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7"
+
+# ─── Tokens ─────────────────────────────────────────────────
+tokens:
+  WETH:
+    address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    decimals: 18
+    symbol: WETH
+  USDC:
+    address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+    decimals: 6
+    symbol: USDC
+  USDC_E:
+    address: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8"
+    decimals: 6
+    symbol: "USDC.e"
+  USDT:
+    address: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"
+    decimals: 6
+    symbol: USDT
+  WBTC:
+    address: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
+    decimals: 8
+    symbol: WBTC
+  ARB:
+    address: "0x912CE59144191C1204E64559FE8253a0e49E6548"
+    decimals: 18
+    symbol: ARB
+  DAI:
+    address: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1"
+    decimals: 18
+    symbol: DAI
+
+# ─── Uniswap V3 Pools ───────────────────────────────────────
+uniswap_pools:
+  WETH_USDC_500:
+    address: "0xC6962004f452bE9203591991D15f6b388e09E8D0"
+    token0: WETH
+    token1: USDC
+    fee: 500
+  WETH_USDC_3000:
+    address: "0x17c14D2c404D167802b16C450d3c99F88F2c4F4d"
+    token0: WETH
+    token1: USDC
+    fee: 3000
+  WETH_USDT_500:
+    address: "0x641C00A822e8b671738d32a431a4Fb6074E5c79d"
+    token0: WETH
+    token1: USDT
+    fee: 500
+  WBTC_WETH_500:
+    address: "0x2f5e87C9312fa29aed5c179E456625D79015299c"
+    token0: WBTC
+    token1: WETH
+    fee: 500
+  ARB_WETH_500:
+    address: "0xC6F780497A95e246EB9449f5e4770916DCd6396A"
+    token0: ARB
+    token1: WETH
+    fee: 500
+  USDC_USDT_100:
+    address: "0xbE3aD6a5669Dc0B8b12FeBC03608d001b5F6fC9"
+    token0: USDC
+    token1: USDT
+    fee: 100
+
+# ─── Curve Pools ────────────────────────────────────────────
+curve_pools:
+  2pool:
+    address: "0x7f90122BF0700F9E7e1F688fe926940E8839F353"
+    tokens: [USDC_E, USDT]
+    pool_type: stable
+  tricrypto:
+    address: "0x960ea3e3C7FB317332d990873d354E18d7645590"
+    tokens: [USDT, WBTC, WETH]
+    pool_type: crypto
+
+# ─── Balancer Pools ─────────────────────────────────────────
+balancer_pools:
+  wstETH_WETH:
+    pool_id: "0x9791d590788598535278552EEcD4b211bFc790CB000000000000000000000498"
+    tokens: [WETH]
+  WBTC_WETH_USDC:
+    pool_id: "0x64541216bAFFFEec8ea535BB71Fbc927831d0595000100000000000000000002"
+    tokens: [WBTC, WETH, USDC_E]
+
+# ─── Trading Parameters ─────────────────────────────────────
+trading:
+  # Flash loan
+  flash_loan_asset: "WETH"                  # Primary borrow asset
+  flash_loan_fee_bps: 9                     # Aave V3 fee: 0.09%
+
+  # Minimum profit thresholds
+  min_profit_usd: 5.0                       # Skip opportunities below $5
+  min_profit_eth: 0.002                     # ~$6 at ETH=$3000
+  min_profit_after_gas_multiplier: 1.5      # Net profit must be 1.5x gas cost
+
+  # Position sizing
+  max_flash_loan_eth: 500.0                 # Max single trade size in ETH
+  min_flash_loan_eth: 0.1                   # Min flash loan size
+
+  # Slippage
+  max_slippage_bps: 50                      # 0.5% max slippage tolerance
+
+  # Gas
+  max_gas_price_gwei: 2.0                   # Skip if gas > 2 gwei on Arbitrum
+  gas_limit_buffer: 1.3                     # 30% gas estimate buffer
+
+  # Scan interval
+  scan_interval_ms: 100                     # Price scan every 100ms
+  opportunity_ttl_ms: 500                   # Opportunity expires after 500ms
+
+  # Circuit breaker
+  max_consecutive_failures: 5              # Pause after 5 failed txns
+  failure_cooldown_seconds: 60             # Wait 60s after circuit break
+  max_daily_loss_eth: 1.0                  # Stop trading if daily loss > 1 ETH
+
+# ─── Algorithm Parameters ───────────────────────────────────
+algorithms:
+  # CMA-ES (Covariance Matrix Adaptation Evolution Strategy)
+  cma_es:
+    population_size: 32
+    initial_sigma: 0.3
+    max_iterations: 100
+    tolerance: 1e-9
+
+  # Unscented Kalman Filter
+  ukf:
+    process_noise: 0.001
+    measurement_noise: 0.01
+    alpha: 1e-3
+    beta: 2.0
+    kappa: 0.0
+
+  # Thompson Sampling (DEX bandit)
+  thompson:
+    alpha_init: 1.0
+    beta_init: 1.0
+    decay_rate: 0.995             # Slowly decay old observations
+
+  # PPO Agent
+  ppo:
+    hidden_dim: 256
+    lr_actor: 3e-4
+    lr_critic: 1e-3
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_epsilon: 0.2
+    entropy_coef: 0.01
+    update_epochs: 10
+    batch_size: 64
+    checkpoint_path: "data/ppo_checkpoint.pt"
+
+# ─── RPC Management ─────────────────────────────────────────
+rpc:
+  health_check_interval_seconds: 10
+  latency_ema_alpha: 0.2          # EMA weight for latency tracking
+  max_latency_ms: 500             # Mark endpoint as degraded if > 500ms
+  reconnect_backoff_seconds: [1, 2, 4, 8, 16]
+
+# ─── Risk Management ────────────────────────────────────────
+risk:
+  max_open_positions: 1           # Only 1 flash loan at a time
+  max_position_size_eth: 200.0
+  var_confidence: 0.95            # 95% VaR
+  stress_test_multiplier: 3.0
+
+# ─── Monitoring ─────────────────────────────────────────────
+monitoring:
+  metrics_interval_seconds: 5
+  log_trades: true
+  alert_on_profit_above_usd: 100  # Send Telegram alert for big wins
+  alert_on_loss_above_usd: 50     # Send alert on significant losses

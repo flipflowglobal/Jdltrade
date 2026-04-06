@@ -1,0 +1,50 @@
+# ─── NEXUS-ARB v2.0 Python Dependencies ─────────────────────
+
+# Web3 & Async
+web3==6.15.1
+eth-abi==4.2.1
+eth-account==0.10.0
+aiohttp==3.9.3
+websockets==12.0
+asyncio-throttle==1.0.2
+
+# Data & Math
+numpy==1.26.4
+scipy==1.12.0
+pandas==2.2.0
+
+# Machine Learning (PPO, Neural Networks)
+torch==2.2.0
+torchvision==0.17.0
+
+# YAML Config
+PyYAML==6.0.1
+
+# Environment
+python-dotenv==1.0.1
+
+# Cryptography & Security
+cryptography==42.0.2
+boto3==1.34.34              # AWS KMS support
+
+# Monitoring & Metrics
+prometheus-client==0.20.0
+structlog==24.1.0
+
+# Telegram Alerts
+python-telegram-bot==21.0.1
+
+# Rust Extension (built via maturin)
+# Install with: cd nexus_core && maturin develop --release
+# nexus_core  # local Rust extension
+
+# Testing
+pytest==8.0.0
+pytest-asyncio==0.23.4
+pytest-mock==3.12.0
+hypothesis==6.98.8
+
+# Dev Tools
+black==24.1.1
+mypy==1.8.0
+ruff==0.2.1

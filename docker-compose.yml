@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  nexus-arb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-arb
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - nexus-net
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "python", "-c", "import nexus_arb; print('ok')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    container_name: nexus-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - nexus-net
+
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: nexus-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infra/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=nexusarb2024
+    networks:
+      - nexus-net
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  nexus-net:
+    driver: bridge

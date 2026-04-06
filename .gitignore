@@ -1,0 +1,35 @@
+# CRITICAL: Never commit sensitive files
+.env
+*.key
+*.pem
+*.p12
+data/ppo_checkpoint.pt
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+
+# Rust
+nexus_core/target/
+nexus_core/*.so
+nexus_core/*.pyd
+
+# Node / Hardhat
+hardhat/node_modules/
+hardhat/artifacts/
+hardhat/cache/
+
+# Logs and data
+logs/*.log
+data/*.json
+
+# OS
+.DS_Store
+Thumbs.db
