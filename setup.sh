@@ -1,57 +1,92 @@
-#!/data/data/com.termux/files/usr/bin/bash
-# ============================================================
-# JDL Trade - Termux Coding Agent Setup
-# Installs all dependencies for the advanced crypto coding agent
-# ============================================================
+#!/bin/bash
+# ================================================================
+# JDL Trade — Setup Script
+# Works on both Termux (Android) and Linux
+# Run once after cloning: bash ~/jdltrading/setup.sh
+# ================================================================
 
 set -e
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
-echo "========================================"
-echo "  JDL Trade Termux Coding Agent Setup  "
-echo "========================================"
+RED='\033[0;31m'; GRN='\033[0;32m'; YLW='\033[1;33m'
+CYN='\033[0;36m'; BLD='\033[1m'; RST='\033[0m'
 
-# Update and upgrade Termux packages
-echo "[*] Updating Termux packages..."
-pkg update -y && pkg upgrade -y
+info() { echo -e "  ${GRN}[+]${RST} $*"; }
+warn() { echo -e "  ${YLW}[!]${RST} $*"; }
+err()  { echo -e "  ${RED}[✗]${RST} $*"; exit 1; }
+step() { echo -e "\n  ${CYN}${BLD}──── $* ────${RST}"; }
 
-# Install system dependencies
-echo "[*] Installing system dependencies..."
-pkg install -y python python-pip git curl wget openssl libffi
+echo -e "${CYN}${BLD}"
+echo "  ╔══════════════════════════════════════╗"
+echo "  ║   JDL Trade · Coding Agent Setup     ║"
+echo "  ║   ~/jdltrading                        ║"
+echo "  ╚══════════════════════════════════════╝"
+echo -e "${RST}"
 
-# Install Python dependencies
-echo "[*] Installing Python dependencies..."
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Create config directory
-echo "[*] Creating config directories..."
-mkdir -p ~/.jdltrade/{memory,sessions,workspace,logs}
-
-# Set up .env if it doesn't exist
-if [ ! -f .env ]; then
-    echo "[*] Creating .env template..."
-    cat > .env << 'EOF'
-# JDL Trade Coding Agent Configuration
-ANTHROPIC_API_KEY=your_api_key_here
-
-# Agent settings
-AGENT_MAX_TOKENS=128000
-AGENT_EFFORT=max
-AGENT_MEMORY_DIR=~/.jdltrade/memory
-AGENT_SESSION_DIR=~/.jdltrade/sessions
-AGENT_WORKSPACE=~/.jdltrade/workspace
-
-# Optional: crypto API keys
-COINGECKO_API_KEY=
-BINANCE_API_KEY=
-BINANCE_SECRET_KEY=
-EOF
-    echo "[!] Edit .env and add your ANTHROPIC_API_KEY before running"
+# ── Detect platform ───────────────────────────────────────────────
+IS_TERMUX=false
+if [ -n "$PREFIX" ] && echo "$PREFIX" | grep -q "termux"; then
+    IS_TERMUX=true
 fi
 
+# ── Install system packages ───────────────────────────────────────
+step "System packages"
+if $IS_TERMUX; then
+    info "Termux detected — using pkg"
+    pkg update -y -q
+    pkg install -y -q python python-pip nano git curl
+else
+    info "Linux detected — checking tools"
+    for tool in python3 pip3 nano git curl; do
+        if command -v "$tool" &>/dev/null; then
+            info "$tool ✓  $(command -v $tool)"
+        else
+            warn "$tool not found — trying apt..."
+            apt-get install -y -q "$tool" 2>/dev/null || warn "Could not install $tool"
+        fi
+    done
+fi
+
+# ── Create runtime directories ────────────────────────────────────
+step "Directories"
+mkdir -p ~/.jdltrade/{memory,sessions,logs}
+mkdir -p "$SCRIPT_DIR/workspace"
+info "~/.jdltrade/{memory,sessions,logs}"
+info "$SCRIPT_DIR/workspace"
+
+# ── Python dependencies ───────────────────────────────────────────
+step "Python dependencies"
+PIP=$(command -v pip3 || command -v pip)
+$PIP install -q -r "$SCRIPT_DIR/requirements.txt"
+info "All packages installed"
+
+# ── .env file ─────────────────────────────────────────────────────
+step "Configuration"
+ENV_FILE="$SCRIPT_DIR/.env"
+if [ ! -f "$ENV_FILE" ] || ! grep -q "ANTHROPIC_API_KEY=sk-" "$ENV_FILE" 2>/dev/null; then
+    cp "$SCRIPT_DIR/.env.example" "$ENV_FILE" 2>/dev/null || true
+    warn ".env created — you MUST add your ANTHROPIC_API_KEY:"
+    warn "  nano $ENV_FILE"
+else
+    info ".env already configured ✓"
+fi
+
+# ── Permissions ───────────────────────────────────────────────────
+chmod +x "$SCRIPT_DIR/nano_builder.sh"
+chmod +x "$SCRIPT_DIR/run.sh" 2>/dev/null || true
+
+# ── Verify imports ────────────────────────────────────────────────
+step "Verifying Python imports"
+python3 -c "import anthropic, rich, prompt_toolkit, httpx, dotenv; print('  All imports OK')"
+
 echo ""
-echo "========================================"
-echo "  Setup complete!"
-echo "  1. Edit .env with your API key"
-echo "  2. Run: python main.py"
-echo "========================================"
+echo -e "  ${GRN}${BLD}╔══════════════════════════════════════╗${RST}"
+echo -e "  ${GRN}${BLD}║  Setup complete!                     ║${RST}"
+echo -e "  ${GRN}${BLD}╚══════════════════════════════════════╝${RST}"
+echo ""
+echo -e "  Next steps:"
+echo -e "  ${YLW}1.${RST} Add your API key:  nano $ENV_FILE"
+echo -e "  ${YLW}2.${RST} Start the agent:   cd ~/jdltrading && python3 main.py"
+echo -e "  ${YLW}3.${RST} Build a project:   bash nano_builder.sh"
+echo ""
