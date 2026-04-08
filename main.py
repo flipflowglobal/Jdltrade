@@ -177,6 +177,100 @@ def _summarize_tool_input(tool_name: str, inp: dict) -> str:
     return str(inp)[:80]
 
 
+def _open_nano(file_path: str, agent=None):
+    """Open a file in nano. After the user saves and exits, optionally feed it to the agent."""
+    import subprocess
+    from pathlib import Path
+    from agent.config import Config
+
+    # Resolve path — relative paths land in workspace
+    p = Path(file_path)
+    if not p.is_absolute():
+        p = Config.WORKSPACE / p
+    p = p.expanduser()
+    p.parent.mkdir(parents=True, exist_ok=True)
+
+    existed = p.exists()
+    old_content = p.read_text(encoding="utf-8") if existed else ""
+
+    if RICH:
+        console.print(f"\n[yellow]Opening nano:[/yellow] {p}")
+        console.print("[dim]Ctrl+O = Save  ·  Ctrl+X = Exit[/dim]\n")
+    else:
+        print(f"\nOpening nano: {p}")
+        print("Ctrl+O Save  Ctrl+X Exit\n")
+
+    # nano runs interactively — must use the real TTY, not subprocess capture
+    try:
+        subprocess.run(["nano", str(p)], check=False)
+    except FileNotFoundError:
+        if RICH:
+            console.print("[red]nano not found. Install with: pkg install nano[/red]")
+        else:
+            print("nano not found. Run: pkg install nano")
+        return
+
+    # Read back what the user wrote
+    if not p.exists():
+        if RICH:
+            console.print("[dim]File not saved (nano exited without writing).[/dim]")
+        return
+
+    new_content = p.read_text(encoding="utf-8")
+    lines = new_content.count("\n") + 1
+    changed = new_content != old_content
+
+    if RICH:
+        status = "[green]saved[/green]" if changed else "[dim]unchanged[/dim]"
+        console.print(f"\n  {status}: {p}  ({lines} lines)")
+    else:
+        print(f"\n  {'Saved' if changed else 'Unchanged'}: {p}  ({lines} lines)")
+
+    # If agent is present and file changed, offer to show it the file
+    if agent and changed:
+        if RICH:
+            from rich.prompt import Confirm
+            if Confirm.ask(f"  Show this file to the agent?", default=False):
+                run_agent(agent, f"I just edited this file in nano:\n\n```\n{new_content}\n```\n\nPath: {p}\n\nPlease review it and let me know if there are any issues or improvements.")
+        else:
+            answer = input("  Show this file to the agent? [y/N]: ").strip().lower()
+            if answer == "y":
+                run_agent(agent, f"I just edited this file in nano:\n\n```\n{new_content}\n```\n\nPath: {p}\n\nPlease review it.")
+
+
+def _run_nano_builder(args_str: str = ""):
+    """Launch nano_builder.sh, which walks the user through building a project file-by-file in nano."""
+    import subprocess
+    from pathlib import Path
+
+    script = Path(__file__).parent / "nano_builder.sh"
+    if not script.exists():
+        if RICH:
+            console.print("[red]nano_builder.sh not found in project root.[/red]")
+        else:
+            print("nano_builder.sh not found.")
+        return
+
+    # Make sure it's executable
+    script.chmod(0o755)
+
+    cmd = ["bash", str(script)] + (args_str.split() if args_str else [])
+    if RICH:
+        console.print(f"\n[cyan]Launching nano project builder...[/cyan]\n")
+    else:
+        print("\nLaunching nano project builder...\n")
+
+    try:
+        subprocess.run(cmd, check=False)
+    except KeyboardInterrupt:
+        pass
+
+    if RICH:
+        console.print("\n[dim]Returned to agent.[/dim]")
+    else:
+        print("\nReturned to agent.")
+
+
 def interactive_repl(agent, verbose: bool = False):
     """Run the interactive REPL loop."""
     print_banner()
@@ -261,17 +355,40 @@ def interactive_repl(agent, verbose: bool = False):
                     else:
                         print(f"Error: {e}")
 
+            elif cmd.startswith("/nano"):
+                # /nano <path>  — open a file in nano, then optionally tell the agent about it
+                parts = prompt_text.strip().split(None, 1)
+                if len(parts) < 2:
+                    if RICH:
+                        console.print("[red]Usage: /nano <file_path>[/red]")
+                    else:
+                        print("Usage: /nano <file_path>")
+                else:
+                    _open_nano(parts[1].strip(), agent)
+                continue
+
+            elif cmd.startswith("/new"):
+                # /new [name] [template]  — launch nano_builder.sh interactively
+                parts = prompt_text.strip().split()
+                args_str = " ".join(parts[1:]) if len(parts) > 1 else ""
+                _run_nano_builder(args_str)
+                continue
+
             elif cmd == "/help":
                 help_text = """
 /reset          — Start a new conversation
 /verbose        — Toggle display of Claude's thinking process
 /sessions       — List saved sessions
 /load <id>      — Resume a previous session
+/nano <file>    — Open a file in nano; agent sees the result when you save
+/new [name]     — Launch the nano project builder (interactive templates)
 /exit           — Quit the agent
 /help           — Show this help
 
 Tips:
   • Ask the agent to build crypto projects and it will use all tools autonomously
+  • /nano main.py     — edit a file directly, then ask the agent to review it
+  • /new my_bot       — scaffold a crypto bot project and edit files in nano
   • The agent writes files, runs shell commands, fetches APIs — it actually BUILDS
   • Memory persists across sessions — tell it to remember things
   • Use /verbose to see the agent's reasoning process
