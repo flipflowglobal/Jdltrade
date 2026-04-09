@@ -1,0 +1,25 @@
+[package]
+name = "dl_sovereign"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ethers = { version = "2.0", features = ["ws", "rustls", "abigen"] }
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
+eyre = "0.6"
+dotenv = "0.15"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dashmap = "5.5"
+hex = "0.4"
+tokio-stream = "0.1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
