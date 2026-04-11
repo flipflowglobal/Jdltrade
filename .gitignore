@@ -1,0 +1,30 @@
+# Secrets — NEVER commit
+.env
+*.pem
+*.key
+*_secret*
+*_private*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+*.egg
+
+# Runtime data
+~/.jdltrade/
+sessions/
+memory/
+logs/
+workspace/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
